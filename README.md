@@ -80,3 +80,15 @@ The script `/js/main.js` is produced by the build process.
              :modules {:main {:init-fn core/init}}}}}
 ```
 
+## Create a *production* build
+
+- create a minified version of `./public/main.js`
+```bash
+$ npx shadow-cljs release frontend
+```
+
+The dev file is around 4Mb when the production bundle is 95Kb. Note that the *production* bundle is created in the same file than the development one.
+
+## What's next ?
+
+Check out [next steps](./doc) ... 
