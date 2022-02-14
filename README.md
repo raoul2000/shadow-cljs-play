@@ -1,3 +1,5 @@
+# Shadow-cljs Playground
+
 A playground for *shadow-cljs* experiment and learning ...
 
 ## Requirements
@@ -27,14 +29,34 @@ $ npx shadow-cljs browser-repl
 
 ## Create Entry Point
 
-- create file `src/main/core.cljs`
+- create clojurescript code in `./src/main/core.cljs`
 
 ```clojure
-(ns main.core)
+(ns core)
 
 (defn init []
   (println "hello world"))
 ``` 
+
+The `init` function is dedicated to be invoked on initial load. This is configured in the *build* configuration file (see [Create a Build](#create-a-build) ).
+
+## Create wrapper HTML page
+
+- create and HTML page in `./public/index.html`
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+      <title>App</title>
+  </head>
+  <body>
+      <script src="/js/main.js"></script>
+  </body>
+</html>
+```
+
+The script `/js/main.js` is produced by the build process. 
 
 ## Create a Build
 
