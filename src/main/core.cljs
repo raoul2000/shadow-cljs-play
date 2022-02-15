@@ -1,10 +1,13 @@
 (ns core
-  (:require [counter :as counter]))
+  (:require [counter :as counter]
+            [todo.core :as todo]))
 
 (defn init []
   (js/console.clear)
   (println "hello world")
-  (counter/render-counter "root"))
+  ;;(counter/render-counter "root")
+  (todo/render)
+  )
 
 (defn start []
   (js/console.log "start")
