@@ -25,7 +25,7 @@
 (defn mark-done [todo-id done?]
   (js/console.log todo-id)
   (swap! todo-list (fn [ov]
-                     (map #(if (= todo-id (:id %))
+                     (mapv #(if (= todo-id (:id %))
                              (assoc % :done done?)
                              %)
                           ov))))
@@ -61,9 +61,8 @@
     "Add Todo"]])
 
 (defn todo-app-component []
-  [:div.main
+  [:div.todo-list-container
    [:h1 "Todo list"]
-   [:hr]
    [todo-list-component]
    [todo-form-component]])
 
