@@ -1,19 +1,24 @@
 (ns todo.core
   (:require [reagent.core :as r]
-            [reagent.dom :as dom]))
+            [reagent.dom :as dom]
+            [todo.data :as d]
+            [ajax.core :refer [GET POST json-response-format]]))
 
-(defn create-todo [text]
-  {:id (.toString (cljs.core/random-uuid))
-   :text text
-   :done false})
+(defn create-todo
+  ([text completed]
+   {:id (.toString (cljs.core/random-uuid))
+    :text text
+    :done completed})
+  ([text]
+   (create-todo text false)))
 
-(defonce todo-list (r/atom [(create-todo "Hello")]))
+(defonce todo-list (r/atom []))
 
 (defn clear-todo-list []
   (reset! todo-list []))
 
-(defn add-todo-to-list [text]
-  (swap! todo-list conj (create-todo text)))
+(defn add-todo-to-list [todo]
+  (swap! todo-list conj todo))
 
 (defn id-equals? [id]
   (fn [entry]
@@ -26,9 +31,9 @@
   (js/console.log todo-id)
   (swap! todo-list (fn [ov]
                      (mapv #(if (= todo-id (:id %))
-                             (assoc % :done done?)
-                             %)
-                          ov))))
+                              (assoc % :done done?)
+                              %)
+                           ov))))
 
 ;; ==========================================================
 ;; components
@@ -56,7 +61,7 @@
    [:button
     {:onClick
      #(let [input-el   (js/document.getElementById "new-todo")]
-        (add-todo-to-list (.-value input-el))
+        (add-todo-to-list (create-todo (.-value input-el)))
         (set! (.-value input-el) ""))}
     "Add Todo"]])
 
@@ -71,13 +76,18 @@
    [todo-app-component]
    (js/document.getElementById "root")))
 
+(-> (d/load-todo-list)
+    (.then (fn [todo-v]
+             (doseq [todo (take 10 todo-v)]
+               (js/console.log "text" (:text todo))
+               (add-todo-to-list  (create-todo (:text todo)))))))
+
 (comment
   (clear-todo-list)
-  (add-todo-to-list "111")
-  (add-todo-to-list "222")
 
   (remove-todo-from-list "f1088481-def8-42a5-a68e-8a04feba2fec")
   (mark-done "e91c3d9b-c908-4400-af9f-b0e94c702334" true)
+
   ;;
   )
 
