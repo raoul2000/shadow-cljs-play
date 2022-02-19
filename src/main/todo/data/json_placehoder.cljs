@@ -1,4 +1,4 @@
-(ns todo.data)
+(ns todo.data.json-placehoder)
 
 (defn create-todo [m]
   {:id (.toString (cljs.core/random-uuid))
@@ -21,4 +21,3 @@
       (.then handle-json-response)
       (.then normalize)
       (.catch #(js/console.error "ERROR" %))))
-

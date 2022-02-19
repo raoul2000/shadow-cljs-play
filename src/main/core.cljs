@@ -6,7 +6,7 @@
   (js/console.clear)
   (println "hello world")
   ;;(counter/render-counter "root")
-  (todo/render)
+  (todo/application)
   )
 
 (defn start []

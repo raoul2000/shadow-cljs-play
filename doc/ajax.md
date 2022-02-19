@@ -25,3 +25,7 @@
     (.catch #(js/console.error "ERROR" %)) 
     (.finally #(js/console.log "cleanup")))
 ```
+
+## Promises
+
+[read this](https://gist.github.com/pesterhazy/c4bab748214d2d59883e05339ce22a0f)

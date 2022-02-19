@@ -1,7 +1,7 @@
 (ns todo.core
   (:require [reagent.core :as r]
             [reagent.dom :as dom]
-            [todo.data :as d]
+            [todo.data.json-placehoder :as jp]
             [ajax.core :refer [GET POST json-response-format]]))
 
 (defn create-todo
@@ -76,11 +76,16 @@
    [todo-app-component]
    (js/document.getElementById "root")))
 
-(-> (d/load-todo-list)
-    (.then (fn [todo-v]
-             (doseq [todo (take 10 todo-v)]
-               (js/console.log "text" (:text todo))
-               (add-todo-to-list  (create-todo (:text todo)))))))
+(defn fetch-todos []
+  (-> (jp/load-todo-list)
+      (.then (fn [todo-v]
+               (doseq [todo (take 10 todo-v)]
+                 (js/console.log "text" (:text todo))
+                 (add-todo-to-list  (create-todo (:text todo))))))))
+
+(defn application []
+  (-> (fetch-todos)
+      (.then render)))
 
 (comment
   (clear-todo-list)
