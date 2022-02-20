@@ -1,57 +1,47 @@
 (ns todo.core
-  (:require [reagent.core :as r]
-            [reagent.dom :as dom]
+  (:require [reagent.dom :as dom]
+            [todo.model.todo :as model]
             [todo.data.json-placehoder :as jp]
-            [ajax.core :refer [GET POST json-response-format]]))
+            [todo.data.sheet-best :as sheet]))
 
-(defn create-todo
-  ([text completed]
-   {:id (.toString (cljs.core/random-uuid))
-    :text text
-    :done completed})
-  ([text]
-   (create-todo text false)))
+;; ==========================================================
+;; handlers
 
-(defonce todo-list (r/atom []))
+(defn handle-add-todo []
+  (let [input-el   (js/document.getElementById "new-todo")
+        todo       (model/create-todo (.-value input-el))]
+    (-> (sheet/save-todo todo)
+        (.then #(do
+                  (set! (.-value input-el) "")
+                  (model/add-todo-to-list todo))))))
 
-(defn clear-todo-list []
-  (reset! todo-list []))
+(defn handle-toggle-done [todo]
+  (let [updated-todo (update todo :done not)]
+    (-> (sheet/update-todo updated-todo)
+        (.then #(model/mark-done (:id updated-todo)  (:done updated-todo))))))
 
-(defn add-todo-to-list [todo]
-  (swap! todo-list conj todo))
-
-(defn id-equals? [id]
-  (fn [entry]
-    (= id (:id entry))))
-
-(defn remove-todo-from-list [id]
-  (swap! todo-list #(remove (id-equals? id) %)))
-
-(defn mark-done [todo-id done?]
-  (js/console.log todo-id)
-  (swap! todo-list (fn [ov]
-                     (mapv #(if (= todo-id (:id %))
-                              (assoc % :done done?)
-                              %)
-                           ov))))
+(defn handle-delete-todo [todo-id]
+  (when (js/confirm "Are you sure you want to delete this item ? ")
+    (-> (sheet/delete-todo todo-id)
+        (.then #(model/remove-todo-from-list todo-id)))))
 
 ;; ==========================================================
 ;; components
 
 (defn todo-item-component-mapper [todo]
-  [:div.todo {:key (:id todo)}
+  [:div.todo {:key (:id todo) :data-id (:id todo)}
    [:div.text {:style {:text-decoration (if (:done todo) "line-through" "none")}}
     (:text todo)]
    [:button
-    {:on-click #(mark-done (:id todo) (not (:done todo)))}
+    {:on-click #(handle-toggle-done todo)}
     (if (:done todo) "Undo" "Done")]
    [:button
-    {:onClick #(remove-todo-from-list (:id todo))}
+    {:onClick #(handle-delete-todo (:id todo))}
     "Delete"]])
 
 (defn todo-list-component []
   [:div.todo-list
-   (map todo-item-component-mapper @todo-list)])
+   (map todo-item-component-mapper (model/get-todo-list))])
 
 (defn todo-form-component []
   [:div#new-form.input
@@ -59,10 +49,7 @@
                      :autoComplete "off"
                      :placeholder "enter todo ..."}]
    [:button
-    {:onClick
-     #(let [input-el   (js/document.getElementById "new-todo")]
-        (add-todo-to-list (create-todo (.-value input-el)))
-        (set! (.-value input-el) ""))}
+    {:onClick handle-add-todo}
     "Add Todo"]])
 
 (defn todo-app-component []
@@ -77,24 +64,12 @@
    (js/document.getElementById "root")))
 
 (defn fetch-todos []
-  (-> (jp/load-todo-list)
-      (.then (fn [todo-v]
-               (doseq [todo (take 10 todo-v)]
-                 (js/console.log "text" (:text todo))
-                 (add-todo-to-list  (create-todo (:text todo))))))))
+  (->  (sheet/load-todo-list) ;;(jp/load-todo-list)
+       (.then (fn [todo-v]
+                (doseq [todo todo-v]
+                  (js/console.log "text" (:text todo))
+                  (model/add-todo-to-list  todo))))))
 
 (defn application []
   (-> (fetch-todos)
       (.then render)))
-
-(comment
-  (clear-todo-list)
-
-  (remove-todo-from-list "f1088481-def8-42a5-a68e-8a04feba2fec")
-  (mark-done "e91c3d9b-c908-4400-af9f-b0e94c702334" true)
-
-  ;;
-  )
-
-
-
